@@ -1,0 +1,10 @@
+.venv
+.mypy_cache/
+.ropeproject/
+.idea/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+cpg.bin

@@ -1,0 +1,2 @@
+typedb-client
+PyYAML

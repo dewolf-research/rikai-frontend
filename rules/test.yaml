@@ -1,0 +1,6 @@
+- name: Test Rule 1
+  meta:
+    author: Niklas
+  pattern:
+    - x = HttpOpenRequestA(_, _, _, _, _, _, _)
+    - InternetCloseHandle(x)"
