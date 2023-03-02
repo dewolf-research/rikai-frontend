@@ -23,15 +23,15 @@ class Database:
 
     def get_calls(self) -> Generator[Thing, Any, None]:
         for mapping in self.query("match $x isa Call, has Label $y;"):
-            yield mapping["x"].get_iid(), mapping["y"]._value
+            yield mapping["x"].get_iid(), mapping["y"].as_attribute().get_value()
 
     def get_literals(self) -> Generator[Thing, Any, None]:
         for mapping in self.query("match $x isa Literal, has StringValue $y;"):
-            yield mapping["x"].get_iid(), mapping["y"]._value
+            yield mapping["x"].get_iid(), mapping["y"].as_attribute().get_value()
 
     def get_parameters(self) -> Generator[Tuple[str, str, int], Any, None]:
         for mapping in self.query("match $x (Source: $p, Sink: $c) isa Parameter, has Index $i;"):
-            yield mapping["p"].get_iid(), mapping["c"].get_iid(), mapping["i"]._value
+            yield mapping["p"].get_iid(), mapping["c"].get_iid(), mapping["i"].as_attribute().get_value()
 
     def __del__(self):
         """Close the session when the object is deconstructed."""
