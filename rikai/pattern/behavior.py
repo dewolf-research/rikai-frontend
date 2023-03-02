@@ -1,13 +1,14 @@
 """Module defining behavior objects."""
 from dataclasses import dataclass
-from typing import Dict, Optional, Set, Tuple
+from itertools import chain, product
+from typing import Any, Dict, Generator, Optional, Set, Tuple
 
 from .statement import Assignment, Call, Variable
 
 
 @dataclass(frozen=True)
-class Behavior:
-    """Class modelling a potential software behavior."""
+class Block:
+    """Class modelling a group of statements."""
 
     statements: Tuple[Call, ...]
 
@@ -36,12 +37,47 @@ class Behavior:
         return self.definitions.get(variable, None)
 
     def get_dependencies(self, variable: Variable) -> Tuple[Call, ...]:
-        """Return the statements dependeing on the given variable."""
+        """Return the statements depending on the given variable."""
         return tuple(call for call in self.statements if variable in call.dependencies)
 
     def get_statements(self, label):
         """Return all statements referring to the given label."""
         return [x for x in self.statements if x.label == label]
+
+    def __str__(self):
+        """Return a string representation (reparseable)."""
+        return "\n".join([str(x) for x in self.statements])
+
+    def __len__(self):
+        """Return the size of the current behavior."""
+        return len(self.statements)
+
+
+@dataclass(frozen=True)
+class Behavior(Block):
+    disjunctions: Tuple[Tuple[Block, ...], ...]
+
+    def expand(self) -> Generator[Block, Any, None]:
+        """Iterate all possible combinations of statement blocks."""
+        for possibility in product(*self.disjunctions):
+            yield Block(self.statements + tuple(chain(*(block.statements for block in possibility))))
+
+    @property
+    def blocks(self) -> Generator[Block, Any, None]:
+        """Iterate all blocks in the behavior."""
+        yield Block(self.statements)
+        for alternative in self.disjunctions:
+            yield from alternative
+
+    @property
+    def labels(self) -> Set[str]:
+        """Return a set of utilized labels."""
+        return set().union(*(block.labels for block in self.blocks))
+
+    @property
+    def variables(self) -> Set[Variable]:
+        """Return a set of all variables utilized."""
+        return set().union(*(block.variables for block in self.blocks))
 
     def __str__(self):
         """Return a string representation (reparseable)."""

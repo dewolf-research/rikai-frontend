@@ -5,7 +5,7 @@ from typing import Any, Generator, Iterable, Tuple
 
 from yaml import safe_load
 
-from .behavior import Behavior
+from .behavior import Behavior, Block
 from .operands import Literal, Operand, UnboundVariable, Variable
 from .rule import Rule
 from .statement import Assignment, Call
@@ -16,13 +16,23 @@ class PatternParser:
 
     REGEX_STATEMENTS = compile(r"(?:(?P<defines>[\w ,]+) = )?(?P<label>[\w@!-_]+)\((?P<parameters>[\w\- ,:\"]+)?\)")
 
-    def parse_pattern(self, text: str) -> Behavior:
-        """Generate a pattern from the given string."""
-        return self.parse_lines(text.splitlines())
+    def parse_lines(self, text: str) -> Block:
+        """Generate a block from the given string."""
+        return self.parse_block(text.splitlines())
 
-    def parse_lines(self, lines: Iterable[str]) -> Behavior:
-        """Generate a pattern from an iterable returning strings."""
-        return Behavior(tuple(self.parse_statement(line) for line in lines))
+    def parse_block(self, lines: Iterable[str]) -> Block:
+        """Generate a block from an iterable returning strings."""
+        return Block(tuple(self.parse_statement(line) for line in lines))
+
+    def parse_behavior(self, lines: Tuple[str | Tuple[str, ...], ...]) -> Behavior:
+        """Generate a behavior from an string iterable."""
+        return Behavior(
+            tuple(self.parse_statement(line) for line in lines if isinstance(line, str)),
+            tuple(
+                tuple(self.parse_block(block) for block in disjunction)
+                for disjunction in (line for line in lines if isinstance(line, list))
+            ),
+        )
 
     def parse_statement(self, text: str) -> Call:
         """Parse a statement from the given string."""
@@ -97,4 +107,4 @@ class RuleParser:
         :param data: A dict containing a 'name', 'meta' and 'pattern' field.
         :return: The corresponding Rule object.
         """
-        return Rule(data["name"], data["meta"], self._parser.parse_lines(data["pattern"]))
+        return Rule(data["name"], data["meta"], self._parser.parse_behavior(data["pattern"]))
