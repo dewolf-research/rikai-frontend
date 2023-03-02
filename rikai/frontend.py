@@ -48,7 +48,7 @@ class SynchronousFrontend(FrontendInterface):
 
     def report_live(self, sample: Path):
         """Analyze the file while reporting matches on the go."""
-        for (rule, matches) in self.analyze(sample):
+        for rule, matches in self.analyze(sample):
             print(f"{rule.name} matched at {matches}")
 
     def report_dict(self, sample: Path) -> list:
