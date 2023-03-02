@@ -14,6 +14,7 @@ jobs:
       - uses: weibullguy/python-lint-plus@v1.11.0
         with:
           python-version: "3.10"
+          python-root-list: "rikai"
           use-black: true
           use-isort: true
           use-mypy: true
