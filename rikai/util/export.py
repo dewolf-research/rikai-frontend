@@ -1,5 +1,7 @@
 """Module dedicated to the export and visualization of typedb databases."""
 from pathlib import Path
+from typing import Any, Generator
+
 from rikai.data.database import Database
 
 
@@ -9,7 +11,7 @@ class DatabasePlotter:
     PROLOGUE = "strict digraph {\n"
     EPILOGUE = "}"
 
-    def plot(self, db: Database) -> str:
+    def plot(self, db: Database) -> Generator[str, Any, None]:
         """Generate string lines in dot-format for the given database."""
         yield self.PROLOGUE
         for iid, label in db.get_calls():
@@ -22,13 +24,5 @@ class DatabasePlotter:
 
     def save(self, db: Database, path: Path):
         """Generate a plot of the given db and save it at the given path."""
-        with path.open('w') as outfile:
+        with path.open("w") as outfile:
             outfile.write("\n".join(self.plot(db)))
-
-
-from rikai.data.database import DatabaseManager
-db_name = "38dabdbb-82f3-41d0-8eb3-ca6649ee324e"
-manager = DatabaseManager("localhost", 1729)
-db = manager.get(db_name)
-
-DatabasePlotter().save(db, Path("/home/nb/workspace/rikai/frontend/test.dot"))
