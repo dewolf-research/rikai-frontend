@@ -17,5 +17,7 @@ jobs:
           use-black: true
           use-isort: true
           use-mypy: true
+          use-pycodestyle: true
           extra-black-options: "--line-length 140"
+          extra-pycodestyle-options: "--max-line-length=140"
           
