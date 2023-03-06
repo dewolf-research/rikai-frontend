@@ -36,7 +36,7 @@ class PatternParser:
         return Call(values["label"], parameters)
 
     def _parse_parameters(self, text: str) -> Tuple[Operand, ...]:
-        """Parse the parameter string, checking for the presence of"""
+        """Parse the parameter string, checking for the presence of indices."""
         tokens = (parameter.strip() for parameter in filter(None, text.split(",")))
         if ":" not in text:
             return tuple(self._parse_operand(token) for token in tokens)
@@ -70,6 +70,7 @@ class RuleParser:
     def iterate(self, path: Path) -> Generator[Rule, Any, None]:
         """
         Iterate all rules in the given directory and its subdirectories.
+
         :param path: The path to the root rule directory.
         :return: Yield all rules found.
         """
@@ -79,6 +80,7 @@ class RuleParser:
     def parse_file(self, path: Path) -> Generator[Rule, Any, None]:
         """
         Parse the given file and yield all contained rules.
+
         :param path: The path to the yaml file to be parsed.
         :return: Yield all rules contained.
         """
@@ -91,6 +93,7 @@ class RuleParser:
     def parse_rule(self, data: dict) -> Rule:
         """
         Parse the given rule from the given dictionary.
+
         :param data: A dict containing a 'name', 'meta' and 'pattern' field.
         :return: The corresponding Rule object.
         """

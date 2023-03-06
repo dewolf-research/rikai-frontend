@@ -16,6 +16,7 @@ class PatternMatcher:
     def match(self, behavior: Behavior) -> Tuple[Tuple[int, ...], ...]:
         """
         Try to match the given behavior on the database.
+
         :param behavior: The behavior to be matched.
         :return: A tuple containing tuples with the line numbers of all matches.
         """

@@ -11,6 +11,7 @@ class JoernBridge:
     def __init__(self, path: Path, timeout: int = 120):
         """
         Create a new JoenBridge.
+
         :param path: The path to the rikai executable to be utilized.
         :param timeout: The timeout in seconds.
         """
@@ -21,6 +22,7 @@ class JoernBridge:
     def process_data(self, data: str) -> str:
         """
         Pass the given data to joern utilizing a temporary file.
+
         :param data: The source code to be passed.
         :return: The id of the created database.
         """
@@ -31,6 +33,7 @@ class JoernBridge:
     def process_source(self, path: Path) -> str:
         """
         Use joern to process the given file.
+
         :param path: The path to the source file to be processed.
         :return: The id of the created database.
         """

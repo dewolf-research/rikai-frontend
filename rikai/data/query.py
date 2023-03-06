@@ -16,6 +16,7 @@ class QueryGenerator:
     def _generate_query(behavior: Behavior) -> Generator[str, Any, None]:
         """
         Yield queries for each statement in the behavior, tracking the lines of Call matches.
+
         :param behavior: The behavior to be processed.
         :return: Strings making up the query.
         """
@@ -30,6 +31,7 @@ class QueryGenerator:
     def _add_parameters(behavior, call_name, statement) -> Generator[str, Any, None]:
         """
         Generate strings as constraints about the parameters of the given statement.
+
         :param behavior: The behavior object containing the statement.
         :param call_name: String identifier of the parent Call entity.
         :param statement: The statement those parameters should be processed.
