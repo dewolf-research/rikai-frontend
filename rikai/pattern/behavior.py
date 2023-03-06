@@ -55,6 +55,8 @@ class Block:
 
 @dataclass(frozen=True)
 class Behavior(Block):
+    """Class modelling a behavior, potentially containing several blocks."""
+
     disjunctions: Tuple[Tuple[Block, ...], ...]
 
     def expand(self) -> Generator[Block, Any, None]:
