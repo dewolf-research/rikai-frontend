@@ -16,6 +16,7 @@ class FrontendInterface(ABC):
     def __init__(self, config: Path = Path("config.ini")):
         """
         Create a new frontend instance based on the given config.
+
         :param config: The path to the config file.
         """
         self._config = ConfigParser()
@@ -35,6 +36,7 @@ class SynchronousFrontend(FrontendInterface):
     def analyze(self, sample: Path) -> Generator[Tuple[Rule, Tuple[Tuple[int, ...], ...]], Any, None]:
         """
         Analyze the given file.
+
         :param sample: The path to the file to be analyzed.
         :return: A dictionary mapping the matched rules to the matching lines.
         """

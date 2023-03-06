@@ -7,7 +7,7 @@ from .statement import Assignment, Call, Variable
 
 @dataclass(frozen=True)
 class Behavior:
-    """Class modelling a potential software behavior-"""
+    """Class modelling a potential software behavior."""
 
     statements: Tuple[Call, ...]
 
@@ -28,6 +28,7 @@ class Behavior:
 
     @property
     def definitions(self) -> Dict[Variable, Assignment]:
+        """Return a dict mapping variables to their assignment statements."""
         return {assignment.assignee: assignment for assignment in self.assignments}
 
     def get_definition(self, variable: Variable) -> Optional[Assignment]:

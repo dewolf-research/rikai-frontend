@@ -14,6 +14,7 @@ class Database:
     def query(self, query: str) -> Tuple[Dict[str, Thing]]:
         """
         Send the given query to the database.
+
         :param query: The string query to be send.
         :return: A tuple of result mappings, mapping variable names to Thing instances.
         """
@@ -22,14 +23,17 @@ class Database:
             return [x.map() for x in result]  # type: ignore
 
     def get_calls(self) -> Generator[Thing, Any, None]:
+        """Iterate all call nodes and their ids in the database."""
         for mapping in self.query("match $x isa Call, has Label $y;"):
             yield mapping["x"].get_iid(), mapping["y"].as_attribute().get_value()
 
     def get_literals(self) -> Generator[Thing, Any, None]:
+        """Iterate all literal nodes and their ids in the database."""
         for mapping in self.query("match $x isa Literal, has StringValue $y;"):
             yield mapping["x"].get_iid(), mapping["y"].as_attribute().get_value()
 
     def get_parameters(self) -> Generator[Tuple[str, str, int], Any, None]:
+        """Iterate all parameter relations in the database."""
         for mapping in self.query("match $x (Source: $p, Sink: $c) isa Parameter, has Index $i;"):
             yield mapping["p"].get_iid(), mapping["c"].get_iid(), mapping["i"].as_attribute().get_value()
 
@@ -44,6 +48,7 @@ class DatabaseManager:
     def __init__(self, hostname: str, port: int):
         """
         Create a manager for database objects handling TypeDB.
+
         :param hostname: The hostname of the server to connect to.
         :param port: The port to connect on.
         """
@@ -52,6 +57,7 @@ class DatabaseManager:
     def get(self, name: str) -> Database:
         """
         Get the database with the given name.
+
         :param name: The name of the database.
         :return: The database object requested.
         """

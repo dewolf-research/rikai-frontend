@@ -78,7 +78,7 @@ class TestParser:
         "input,output",
         [
             ("x = foo()", Assignment("foo", tuple(), Variable("x"))),
-            ('x123 = foo("test")', Assignment("foo", tuple((Literal("test"),)), Variable("x13"))),
+            ('x123 = foo("test")', Assignment("foo", tuple((Literal("test"),)), Variable("x123"))),
         ],
     )
     def test_parse_assignments(self, input, output):
