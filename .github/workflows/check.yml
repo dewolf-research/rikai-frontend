@@ -14,13 +14,16 @@ jobs:
       - name: Install Code Formatters
         run: |
           pip install pytest black mypy isort pydocstyle pycodestyle
-      - name: Run Checks
-        run: |
-          black --check .
-          mypy --install-types --non-interactive -p rikai
-          pydocstyle rikai
-          pycodestyle --max-line-length=140 rikai
-          isort -c .
+      - name: black
+        run: black --check .
+      - name: mypy
+        run: mypy --install-types --non-interactive -p rikai
+      - name: pydocstyle
+        run: pydocstyle rikai
+      - name: pycodestyle
+        run: pycodestyle --max-line-length=140 rikai
+      - name: isort
+        run: isort -c .
   run-tests:
     runs-on: ubuntu-latest
     container:
