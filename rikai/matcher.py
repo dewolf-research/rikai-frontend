@@ -20,6 +20,9 @@ class PatternMatcher:
         :param behavior: The behavior to be matched.
         :return: A tuple containing tuples with the line numbers of all matches.
         """
-        query = self._generator.generate(behavior)
-        result = self._db.query(query)
-        return tuple(tuple(int(x._value) for x in match.values()) for match in result)
+        for block in behavior.expand():
+            query = self._generator.generate(block)
+            result = self._db.query(query)
+            if result:
+                return tuple(tuple(int(x.as_attribute().get_value()) for x in match.values()) for match in result)
+        return tuple()

@@ -2,5 +2,6 @@
   meta:
     author: Niklas
   pattern:
-    - x = HttpOpenRequestA(_, _, _, _, _, _, _)
+    - - - x = foo()
+      - - x = HttpOpenRequestA(_, _, _, _, _, _, _)
     - InternetCloseHandle(x)"
