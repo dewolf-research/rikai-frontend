@@ -14,7 +14,7 @@ jobs:
       - name: Install Code Formatters
         run: |
           pip install black mypy isort pydocstyle pycodestyle
-          mypy --install-types
+          mypy --install-types -p rikai
       - name: Run Checks
         run: |
           black --check .
