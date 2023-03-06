@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: weibullguy/python-lint-plus@v1.11.0
+      - uses: weibullguy/python-lint-plus@v1.12.0
         with:
           python-root-list: "rikai"
           use-black: true
