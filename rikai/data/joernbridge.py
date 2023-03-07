@@ -1,6 +1,7 @@
 """Module handling the communication with the joern plugin."""
+import sys
 from pathlib import Path
-from subprocess import run
+from subprocess import CalledProcessError, run
 from tempfile import NamedTemporaryFile
 from uuid import uuid4
 
@@ -40,5 +41,9 @@ class JoernBridge:
         assert path.exists(), "The given source file does not exist!"
         database_id = str(uuid4())
         result = run((self.rikai_path, database_id, path), timeout=self.timeout, capture_output=True)
-        result.check_returncode()
+        try:
+            result.check_returncode()
+        except CalledProcessError as e:
+            print(e.stderr.decode("utf-8"))
+            sys.exit()
         return database_id

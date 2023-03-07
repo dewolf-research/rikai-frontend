@@ -15,11 +15,14 @@ Allows to match rules on fuzzy c code utilizing typeDB pattern matching.
 ## Setup
 Check out `config.ini` for all configuration options.
 In order to get started, set up the path to `joern-rikai` and the location a typeDB server.
-You can bootstrap the typeDB server by running `podman run --name typedb -d -p 1729:1729 vaticle/typedb:latest`
+Alternatively, you can download the latest version of rikai-joern by running `setup.sh` and
+you can bootstrap the typeDB server by running `podman run --name typedb -d -p 1729:1729 vaticle/typedb:latest`.
+
+If you want to use the container version of rikai, we recommend utilizing `docker-compose run --rm rikai`.
 
 ## Usage
 You can run rikai from command line like this:
 
-`rikai-cmd.py <path>`
+`./rikai-cmd.py <path>`
 
-Check out `rikai-cmd.py --help` for additional options.
+Check out `./rikai-cmd.py --help` for additional options.

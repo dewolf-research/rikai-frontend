@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Class implementing the command line interface of rikai."""
 from argparse import ArgumentParser, Namespace
 from json import dumps
