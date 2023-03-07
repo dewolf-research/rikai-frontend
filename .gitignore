@@ -2,6 +2,7 @@
 .mypy_cache/
 .ropeproject/
 .idea/
+rikai-joern/
 
 __pycache__/
 *.py[cod]

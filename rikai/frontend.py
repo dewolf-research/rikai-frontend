@@ -21,7 +21,7 @@ class FrontendInterface(ABC):
         """
         self._config = ConfigParser()
         self._config.read(config)
-        self._bridge = JoernBridge(Path(self._config.get("rikai", "Path")))
+        self._bridge = JoernBridge(config.absolute().parent.joinpath(Path(self._config.get("rikai", "Path"))))
         self._manager = DatabaseManager(self._config.get("typedb", "Hostname"), int(self._config.get("typedb", "Port")))
         self._parser = RuleParser()
 
