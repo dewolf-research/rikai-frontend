@@ -1,6 +1,7 @@
 """Module implementing various frontends for rikai."""
 from abc import ABC
 from configparser import ConfigParser
+from os import environ
 from pathlib import Path
 from typing import Any, Generator, Tuple
 
@@ -13,6 +14,8 @@ from rikai.pattern import Rule, RuleParser
 class FrontendInterface(ABC):
     """Basic interface for all frontend implementations."""
 
+    ENV_DBHOST = "RIKAI_DBHOST"
+
     def __init__(self, config: Path = Path("config.ini")):
         """
         Create a new frontend instance based on the given config.
@@ -22,7 +25,9 @@ class FrontendInterface(ABC):
         self._config = ConfigParser()
         self._config.read(config)
         self._bridge = JoernBridge(config.absolute().parent.joinpath(Path(self._config.get("rikai", "Path"))))
-        self._manager = DatabaseManager(self._config.get("typedb", "Hostname"), int(self._config.get("typedb", "Port")))
+        self._manager = DatabaseManager(
+            environ.get(self.ENV_DBHOST, self._config.get("typedb", "Hostname")), int(self._config.get("typedb", "Port"))
+        )
         self._parser = RuleParser()
 
     def _preprocess(self, sample: Path) -> str:
