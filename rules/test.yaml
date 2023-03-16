@@ -1,7 +1,10 @@
-- name: Test Rule 1
-  meta:
-    author: Niklas
-  pattern:
-    - - - x = foo()
-      - - x = HttpOpenRequestA(_, _, _, _, _, _, _)
-    - InternetCloseHandle(x)"
+name: Test Rule 1
+meta:
+  author: Niklas
+pattern:
+  - or:
+      foo:
+        - x = foo()
+      request:
+        - x = HttpOpenRequestA(_, _, _, _, _, _, _)
+  - InternetCloseHandle(x)"

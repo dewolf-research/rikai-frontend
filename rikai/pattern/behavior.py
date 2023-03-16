@@ -1,4 +1,6 @@
 """Module defining behavior objects."""
+from __future__ import annotations
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import chain, product
 from typing import Any, Dict, Generator, Optional, Set, Tuple
@@ -53,23 +55,12 @@ class Block:
         return len(self.statements)
 
 
-@dataclass(frozen=True)
-class Behavior(Block):
-    """Class modelling a behavior, potentially containing several blocks."""
-
-    disjunctions: Tuple[Tuple[Block, ...], ...]
-
-    def expand(self) -> Generator[Block, Any, None]:
-        """Iterate all possible combinations of statement blocks."""
-        for possibility in product(*self.disjunctions):
-            yield Block(self.statements + tuple(chain(*(block.statements for block in possibility))))
+class BlockContainer(ABC):
 
     @property
-    def blocks(self) -> Generator[Block, Any, None]:
-        """Iterate all blocks in the behavior."""
-        yield Block(self.statements)
-        for alternative in self.disjunctions:
-            yield from alternative
+    @abstractmethod
+    def blocks(self) -> Tuple[Block, ...]:
+        pass
 
     @property
     def labels(self) -> Set[str]:
@@ -81,10 +72,53 @@ class Behavior(Block):
         """Return a set of all variables utilized."""
         return set().union(*(block.variables for block in self.blocks))
 
-    def __str__(self):
-        """Return a string representation (reparseable)."""
-        return "\n".join([str(x) for x in self.statements])
+    def __iter__(self) -> Generator[Block, Any, None]:
+        """Iterate ovr all blocks contained in the container."""
+        yield from self.blocks
 
     def __len__(self):
         """Return the size of the current behavior."""
-        return len(self.statements)
+        return sum(len(block) for block in self.blocks)
+
+
+@dataclass(frozen=True)
+class Disjunction(BlockContainer):
+    """Class modelling a block with several alternatives."""
+
+    possibilities: Dict[str, Block]
+
+    @property
+    def blocks(self) -> Tuple[Block, ...]:
+        """Return all Blocks in the disjunction."""
+        return tuple(self.possibilities.values())
+
+    def __str__(self) -> str:
+        """Return a string representation of the disjunction with its blocks and their names."""
+        return 'or:\n' + '\n'.join(f'\t{name}:\n\t\t' + '\n\t\t'.join(str(block).splitlines()) for name, block in self.possibilities.items())
+
+
+@dataclass(frozen=True)
+class Behavior(BlockContainer):
+    """Class modelling a behavior, potentially containing several blocks."""
+
+    block: Block
+    disjunctions: Tuple[Disjunction, ...]
+
+    def expand(self) -> Generator[Block, Any, None]:
+        """Iterate all possible combinations of statement blocks."""
+        for possibility in product(*map(lambda x: x.blocks, self.disjunctions)):
+            yield Block(self.block.statements + tuple(chain(*(block.statements for block in possibility))))
+
+    @property
+    def blocks(self) -> Tuple[Block, ...]:
+        """Iterate all blocks in the behavior."""
+        return tuple(self.__iter__())
+
+    def __iter__(self) -> Generator[Block, Any, None]:
+        yield self.block
+        for disjunction in self.disjunctions:
+            yield from disjunction.blocks
+
+    def __str__(self):
+        """Return a string representation of the behavior."""
+        return "\n".join([str(block) for block in chain((self.block,), self.disjunctions)])
