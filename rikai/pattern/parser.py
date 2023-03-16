@@ -23,7 +23,12 @@ class PatternParser:
     def parse_disjunction(self, disjunction: dict) -> Disjunction:
         """Parse the given disjunction, generating a nested tuple of statements."""
         assert "or" in disjunction, f"Malformed disjunction {disjunction}!"
-        return Disjunction({name: Block(tuple(self.parse_statement(statement) for statement in alternative)) for name, alternative in disjunction["or"].items()})
+        return Disjunction(
+            {
+                name: Block(tuple(self.parse_statement(statement) for statement in alternative))
+                for name, alternative in disjunction["or"].items()
+            }
+        )
 
     def parse_behavior(self, lines: Tuple[str | Tuple[str, ...], ...]) -> Behavior:
         """Generate a behavior from an string iterable."""

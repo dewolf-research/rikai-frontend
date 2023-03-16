@@ -56,10 +56,12 @@ class Block:
 
 
 class BlockContainer(ABC):
+    """Base interface for objects containing several blocks."""
 
     @property
     @abstractmethod
     def blocks(self) -> Tuple[Block, ...]:
+        """Iterate all blocks in the container."""
         pass
 
     @property
@@ -94,7 +96,9 @@ class Disjunction(BlockContainer):
 
     def __str__(self) -> str:
         """Return a string representation of the disjunction with its blocks and their names."""
-        return 'or:\n' + '\n'.join(f'\t{name}:\n\t\t' + '\n\t\t'.join(str(block).splitlines()) for name, block in self.possibilities.items())
+        return "or:\n" + "\n".join(
+            f"\t{name}:\n\t\t" + "\n\t\t".join(str(block).splitlines()) for name, block in self.possibilities.items()
+        )
 
 
 @dataclass(frozen=True)
@@ -111,10 +115,11 @@ class Behavior(BlockContainer):
 
     @property
     def blocks(self) -> Tuple[Block, ...]:
-        """Iterate all blocks in the behavior."""
+        """Return a tuple of all blocks in the behavior."""
         return tuple(self.__iter__())
 
     def __iter__(self) -> Generator[Block, Any, None]:
+        """Iterate all blocks in the behavior."""
         yield self.block
         for disjunction in self.disjunctions:
             yield from disjunction.blocks
