@@ -1,5 +1,6 @@
 """Module defining behavior objects."""
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import chain, product
