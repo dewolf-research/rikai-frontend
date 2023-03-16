@@ -5,7 +5,7 @@ from typing import Any, Generator, Iterable, Tuple
 
 from yaml import safe_load
 
-from .behavior import Behavior, Block
+from .behavior import Behavior, Block, Disjunction
 from .operands import Literal, Operand, UnboundVariable, Variable
 from .rule import Rule
 from .statement import Assignment, Call
@@ -16,22 +16,25 @@ class PatternParser:
 
     REGEX_STATEMENTS = compile(r"(?:(?P<defines>[\w ,]+) = )?(?P<label>[\w@!-_]+)\((?P<parameters>[\w\- ,:\"]+)?\)")
 
-    def parse_lines(self, text: str) -> Block:
-        """Generate a block from the given string."""
-        return self.parse_block(text.splitlines())
-
     def parse_block(self, lines: Iterable[str]) -> Block:
         """Generate a block from an iterable returning strings."""
         return Block(tuple(self.parse_statement(line) for line in lines))
 
+    def parse_disjunction(self, disjunction: dict) -> Disjunction:
+        """Parse the given disjunction, generating a nested tuple of statements."""
+        assert "or" in disjunction, f"Malformed disjunction {disjunction}!"
+        return Disjunction(
+            {
+                name: Block(tuple(self.parse_statement(statement) for statement in alternative))
+                for name, alternative in disjunction["or"].items()
+            }
+        )
+
     def parse_behavior(self, lines: Tuple[str | Tuple[str, ...], ...]) -> Behavior:
         """Generate a behavior from an string iterable."""
         return Behavior(
-            tuple(self.parse_statement(line) for line in lines if isinstance(line, str)),
-            tuple(
-                tuple(self.parse_block(block) for block in disjunction)
-                for disjunction in (line for line in lines if isinstance(line, list))
-            ),
+            Block(tuple(self.parse_statement(line) for line in lines if isinstance(line, str))),
+            tuple(self.parse_disjunction(line) for line in lines if isinstance(line, dict)),
         )
 
     def parse_statement(self, text: str) -> Call:
@@ -85,20 +88,19 @@ class RuleParser:
         :return: Yield all rules found.
         """
         for sub_path in path.rglob("*.yaml"):
-            yield from self.parse_file(sub_path)
+            yield self.parse_file(sub_path)
 
-    def parse_file(self, path: Path) -> Generator[Rule, Any, None]:
+    def parse_file(self, path: Path) -> Rule:
         """
-        Parse the given file and yield all contained rules.
+        Parse the given file and return the contained rules.
 
         :param path: The path to the yaml file to be parsed.
-        :return: Yield all rules contained.
+        :return: The rules contained.
         """
         with path.open("r") as source:
             data = safe_load(source)
-        assert isinstance(data, list), f"Malformed rule file {path}"
-        for entry in data:
-            yield self.parse_rule(entry)
+        assert "pattern" in data, f"Malformed rule file {path}"
+        return self.parse_rule(data)
 
     def parse_rule(self, data: dict) -> Rule:
         """
