@@ -1,7 +1,7 @@
 """Module handling the generation of TypeDB queries."""
 from typing import Any, Generator
 
-from rikai.pattern import Block, IntegerLiteral, StringLiteral, UnboundVariable, Variable
+from rikai.pattern import Block, Call, IntegerLiteral, StringLiteral, UnboundVariable, Variable
 
 
 class QueryGenerator:
@@ -28,7 +28,7 @@ class QueryGenerator:
         yield "get " + ", ".join(f"$l{i}" for i in range(len(block.statements))) + ";"
 
     @staticmethod
-    def _add_parameters(block, call_name, statement) -> Generator[str, Any, None]:
+    def _add_parameters(block, call_name: str, statement: Call) -> Generator[str, Any, None]:
         """
         Generate strings as constraints about the parameters of the given statement.
 
