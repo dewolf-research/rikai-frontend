@@ -12,11 +12,7 @@ class Operand(ABC):
 class Literal(Operand):
     """Base class for all literal types."""
 
-    @property
-    @abstractmethod
-    def value(self) -> str | int:
-        """Return the string or integer value of the literal."""
-        pass
+    pass
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,6 @@
 """Module implementing tests for parsing behavior pattern from text."""
 import pytest
-from rikai.pattern import Assignment, Call, StringLiteral, PatternParser, UnboundVariable, Variable
+from rikai.pattern import Assignment, Call, IntegerLiteral, PatternParser, StringLiteral, UnboundVariable, Variable
 
 
 class TestParser:
@@ -22,7 +22,7 @@ class TestParser:
     )
     def test_parse_operand(self, input, output):
         """Test parsing operands from text strings."""
-        assert PatternParser()._parse_operand(input) == output
+        assert PatternParser({})._parse_operand(input) == output
 
     @pytest.mark.parametrize(
         "input,index,output",
@@ -35,7 +35,7 @@ class TestParser:
     )
     def test_parse_indexed_operand(self, input, index, output):
         """Test if indexed parameters are parsed correctly."""
-        assert PatternParser()._parse_index_operand(input) == (index, output)
+        assert PatternParser({})._parse_index_operand(input) == (index, output)
 
     @pytest.mark.parametrize(
         "input,output",
@@ -49,7 +49,7 @@ class TestParser:
                     tuple(
                         (
                             StringLiteral("0"),
-                            Variable("0"),
+                            IntegerLiteral(0),
                         )
                     ),
                 ),
@@ -72,7 +72,7 @@ class TestParser:
     )
     def test_parse_calls(self, input, output):
         """Test the parsing of calls from raw text strings."""
-        assert PatternParser().parse_statement(input) == output
+        assert PatternParser({}).parse_statement(input) == output
 
     @pytest.mark.parametrize(
         "input,output",
@@ -83,4 +83,4 @@ class TestParser:
     )
     def test_parse_assignments(self, input, output):
         """Test the parsing of assignments from text."""
-        assert PatternParser().parse_statement(input) == output
+        assert PatternParser({}).parse_statement(input) == output
