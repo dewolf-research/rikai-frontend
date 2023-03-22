@@ -1,7 +1,7 @@
 """Module handling the generation of TypeDB queries."""
 from typing import Any, Generator
 
-from rikai.pattern import Behavior, Block, Literal, UnboundVariable, Variable
+from rikai.pattern import Block, IntegerLiteral, StringLiteral, UnboundVariable, Variable
 
 
 class QueryGenerator:
@@ -41,7 +41,9 @@ class QueryGenerator:
             if isinstance(parameter, UnboundVariable):
                 continue
             yield f"({call_name}_{j}, {call_name}) isa Parameter, has Index {j + 1};"
-            if isinstance(parameter, Literal):
-                yield f'{call_name}_{j} isa Literal, has StringValue "{str(parameter)}";'
+            if isinstance(parameter, StringLiteral):
+                yield f'{call_name}_{j} isa StringLiteral, has StringValue "{parameter.value}";'
+            elif isinstance(parameter, IntegerLiteral):
+                yield f"{call_name}_{j} isa IntegerLiteral, has IntegerValue {parameter.value};"
             elif isinstance(parameter, Variable) and (definition := block.get_definition(parameter)):
                 yield f'{call_name}_{j} isa Call, has Label "{definition.label}";'
