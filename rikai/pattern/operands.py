@@ -1,5 +1,5 @@
 """Class implementing operands utilized in behavior pattern."""
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 
@@ -9,15 +9,43 @@ class Operand(ABC):
     pass
 
 
-@dataclass(frozen=True)
 class Literal(Operand):
+    """Base class for all literal types."""
+
+    pass
+
+
+@dataclass(frozen=True)
+class StringLiteral(Literal):
     """Base class for string literals."""
 
     value: str
 
     def __str__(self):
-        """Return the value of the literal."""
+        """Return the string value of the literal."""
         return f'"{self.value}"'
+
+
+@dataclass(frozen=True)
+class IntegerLiteral(Literal):
+    """Base class for string literals."""
+
+    value: int
+
+    def __str__(self):
+        """Return the integer value of the literal."""
+        return hex(self.value)
+
+
+@dataclass(frozen=True)
+class EnumValue(IntegerLiteral):
+    """Class representing a named enum value."""
+
+    name: str
+
+    def __str__(self):
+        """Return the name of the enum value."""
+        return self.name
 
 
 @dataclass(frozen=True)

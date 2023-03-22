@@ -1,2 +1,3 @@
 """Module implementing behavior pattern and their components."""
-from .parser import Assignment, Behavior, Block, Call, Literal, Operand, PatternParser, Rule, RuleParser, UnboundVariable, Variable
+from .operands import EnumValue, IntegerLiteral, Literal, Operand, StringLiteral, UnboundVariable, Variable
+from .parser import Assignment, Behavior, Block, Call, PatternParser, Rule, RuleParser
