@@ -1,6 +1,6 @@
 """Module implementing tests for parsing behavior pattern from text."""
 import pytest
-from rikai.pattern import Assignment, Call, Literal, PatternParser, UnboundVariable, Variable
+from rikai.pattern import Assignment, Call, StringLiteral, PatternParser, UnboundVariable, Variable
 
 
 class TestParser:
@@ -13,10 +13,10 @@ class TestParser:
             ("awd812_dwdw", Variable("awd812_dwdw")),
             ("0x1337", Variable("0x1337")),
             ("_", UnboundVariable()),
-            ('"_"', Literal("_")),
+            ('"_"', StringLiteral("_")),
             (
                 '"This could be quiet a long string! With sp€c1äl chars and everything!"',
-                Literal("This could be quiet a long string! With sp€c1äl chars and everything!"),
+                StringLiteral("This could be quiet a long string! With sp€c1äl chars and everything!"),
             ),
         ],
     )
@@ -30,7 +30,7 @@ class TestParser:
             ("1:x", 1, Variable("x")),
             ("100:0x1337", 100, Variable("0x1337")),
             ("1:_", 1, UnboundVariable()),
-            ('4:"_"', 4, Literal("_")),
+            ('4:"_"', 4, StringLiteral("_")),
         ],
     )
     def test_parse_indexed_operand(self, input, index, output):
@@ -41,14 +41,14 @@ class TestParser:
         "input,output",
         [
             ("foo()", Call("foo", tuple())),
-            ('b64foo("test")', Call("b64foo", tuple((Literal("test"),)))),
+            ('b64foo("test")', Call("b64foo", tuple((StringLiteral("test"),)))),
             (
                 '213412("0", 0)',
                 Call(
                     "213412",
                     tuple(
                         (
-                            Literal("0"),
+                            StringLiteral("0"),
                             Variable("0"),
                         )
                     ),
@@ -61,7 +61,7 @@ class TestParser:
                     tuple(
                         (
                             UnboundVariable(),
-                            Literal("test"),
+                            StringLiteral("test"),
                             UnboundVariable(),
                             Variable("x0"),
                         )
@@ -78,7 +78,7 @@ class TestParser:
         "input,output",
         [
             ("x = foo()", Assignment("foo", tuple(), Variable("x"))),
-            ('x123 = foo("test")', Assignment("foo", tuple((Literal("test"),)), Variable("x123"))),
+            ('x123 = foo("test")', Assignment("foo", tuple((StringLiteral("test"),)), Variable("x123"))),
         ],
     )
     def test_parse_assignments(self, input, output):

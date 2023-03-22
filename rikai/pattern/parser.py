@@ -1,12 +1,12 @@
 """Module implementing the parsing of pattern and rules from strings."""
 from pathlib import Path
 from re import compile
-from typing import Any, Generator, Iterable, Tuple
+from typing import Any, Dict, Generator, Iterable, Tuple
 
 from yaml import safe_load
 
 from .behavior import Behavior, Block, Disjunction
-from .operands import Literal, Operand, UnboundVariable, Variable
+from .operands import EnumValue, IntegerLiteral, Operand, StringLiteral, UnboundVariable, Variable
 from .rule import Rule
 from .statement import Assignment, Call
 
@@ -15,6 +15,10 @@ class PatternParser:
     """Class in charge of parsing pattern and their nested objects."""
 
     REGEX_STATEMENTS = compile(r"(?:(?P<defines>[\w ,]+) = )?(?P<label>[\w@!-_]+)\((?P<parameters>[\w\- ,:\"]+)?\)")
+
+    def __init__(self, definition: Dict[str, int]):
+        """Generate a new PatternParser instance."""
+        self._definitions = definition
 
     def parse_block(self, lines: Iterable[str]) -> Block:
         """Generate a block from an iterable returning strings."""
@@ -62,7 +66,11 @@ class PatternParser:
         if text == UnboundVariable.SYMBOL:
             return UnboundVariable()
         elif text.startswith('"'):
-            return Literal(text.strip('"'))
+            return StringLiteral(text.strip('"'))
+        elif text.isnumeric():
+            return IntegerLiteral(int(text))
+        elif text in self._definitions:
+            return EnumValue(self._definitions[text], text)
         else:
             return Variable(text)
 
@@ -75,10 +83,6 @@ class PatternParser:
 
 class RuleParser:
     """Class dedicated to parse rule definitions from yaml files."""
-
-    def __init__(self):
-        """Generate a new RuleParser instance."""
-        self._parser = PatternParser()
 
     def iterate(self, path: Path) -> Generator[Rule, Any, None]:
         """
@@ -109,4 +113,5 @@ class RuleParser:
         :param data: A dict containing a 'name', 'meta' and 'pattern' field.
         :return: The corresponding Rule object.
         """
-        return Rule(data["name"], data["meta"], self._parser.parse_behavior(data["pattern"]))
+        parser = PatternParser(data["definitions"] if "definitions" in data else {})
+        return Rule(data["name"], data["meta"], parser.parse_behavior(data["pattern"]))
