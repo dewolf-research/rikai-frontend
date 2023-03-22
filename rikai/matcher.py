@@ -2,7 +2,8 @@
 from typing import Tuple
 
 from .data.database import Database
-from .data.query import Behavior, QueryGenerator
+from .data.query import QueryGenerator
+from .pattern import Behavior
 
 
 class PatternMatcher:
