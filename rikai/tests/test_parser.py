@@ -1,6 +1,16 @@
 """Module implementing tests for parsing behavior pattern from text."""
 import pytest
-from rikai.pattern import Assignment, Call, IntegerLiteral, PatternParser, StringLiteral, UnboundVariable, Variable
+from rikai.pattern import (
+    Assignment,
+    Call,
+    CallAssignment,
+    IntegerLiteral,
+    LiteralAssignment,
+    PatternParser,
+    StringLiteral,
+    UnboundVariable,
+    Variable,
+)
 
 
 class TestParser:
@@ -77,8 +87,8 @@ class TestParser:
     @pytest.mark.parametrize(
         "input,output",
         [
-            ("x = foo()", Assignment("foo", tuple(), Variable("x"))),
-            ('x123 = foo("test")', Assignment("foo", tuple((StringLiteral("test"),)), Variable("x123"))),
+            ("x = foo()", CallAssignment(Variable("x"), Call("foo", tuple()))),
+            ('x123 = foo("test")', CallAssignment(Variable("x123"), Call("foo", tuple((StringLiteral("test"),))))),
         ],
     )
     def test_parse_assignments(self, input, output):

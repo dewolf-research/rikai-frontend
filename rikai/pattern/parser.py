@@ -1,20 +1,21 @@
 """Module implementing the parsing of pattern and rules from strings."""
 from pathlib import Path
 from re import compile
-from typing import Any, Dict, Generator, Iterable, Tuple
+from typing import Any, Dict, Generator, Iterable, Optional, Tuple
 
 from yaml import safe_load
 
 from .behavior import Behavior, Block, Disjunction
-from .operands import EnumValue, IntegerLiteral, Operand, StringLiteral, UnboundVariable, Variable
+from .operands import EnumValue, IntegerLiteral, Literal, Operand, StringLiteral, UnboundVariable, Variable
 from .rule import Rule
-from .statement import Assignment, Call
+from .statement import Assignment, Call, CallAssignment, LiteralAssignment, Statement
 
 
 class PatternParser:
     """Class in charge of parsing pattern and their nested objects."""
 
-    REGEX_STATEMENTS = compile(r"(?:(?P<defines>[\w ,]+) = )?(?P<label>[\w@!-_]+)\((?P<parameters>[\w\- ,:\"]+)?\)")
+    REGEX_ASSIGNMENT = compile(r"(?P<lhs>\w+) = (?P<rhs>[\S ]+)")
+    REGEX_CALL = compile(r"(?P<label>[\w@!-_]+)\((?P<parameters>[\w\- ,:\"]+)?\)")
 
     def __init__(self, definition: Dict[str, int]):
         """Generate a new PatternParser instance."""
@@ -41,16 +42,37 @@ class PatternParser:
             tuple(self.parse_disjunction(line) for line in lines if isinstance(line, dict)),
         )
 
-    def parse_statement(self, text: str) -> Call:
+    def parse_statement(self, text: str) -> Statement:
         """Parse a statement from the given string."""
-        regex_match = self.REGEX_STATEMENTS.match(text)
-        if not regex_match:
-            raise ValueError('Can not parse Statement: "%s"' % text)
-        values = regex_match.groupdict("")
-        parameters = self._parse_parameters(values["parameters"])
-        if values["defines"]:
-            return Assignment(values["label"], parameters, Variable(values["defines"]))
-        return Call(values["label"], parameters)
+        if " = " in text:
+            return self.parse_assignment(text)
+        return self.parse_call(text)
+
+    def parse_assignment(self, text: str) -> Assignment:
+        """Parse an assignment from the given string."""
+        if not (match := self.REGEX_ASSIGNMENT.match(text)):
+            raise ValueError(f'Malformed call: "{text}"')
+        values = match.groupdict("")
+        if self._could_be_call(match.group("rhs")):
+            return CallAssignment(Variable(values["lhs"]), self.parse_call(values["rhs"]))
+        return LiteralAssignment(Variable(values["lhs"]), self.parse_literal(values["rhs"]))
+
+    def parse_call(self, text: str) -> Call:
+        """Parse a call statement from the given string."""
+        if not (match := self.REGEX_CALL.match(text)):
+            raise ValueError(f'Malformed call: "{text}"')
+        values = match.groupdict("")
+        return Call(values["label"], self._parse_parameters(values["parameters"]))
+
+    def parse_literal(self, text: str) -> Literal:
+        """Parse a literal (e.g. integer or string) from the given string."""
+        if text in self._definitions:
+            return EnumValue(self._definitions[text], text)
+        if text.startswith('"'):
+            return StringLiteral(text.strip('"'))
+        if text.isnumeric():
+            return IntegerLiteral(int(text))
+        raise ValueError(f'"{text}" is not a valid literal!')
 
     def _parse_parameters(self, text: str) -> Tuple[Operand, ...]:
         """Parse the parameter string, checking for the presence of indices."""
@@ -65,13 +87,9 @@ class PatternParser:
         """Parse an operand from the given string."""
         if text == UnboundVariable.SYMBOL:
             return UnboundVariable()
-        elif text.startswith('"'):
-            return StringLiteral(text.strip('"'))
-        elif text.isnumeric():
-            return IntegerLiteral(int(text))
-        elif text in self._definitions:
-            return EnumValue(self._definitions[text], text)
-        else:
+        try:
+            return self.parse_literal(text)
+        except ValueError as e:
             return Variable(text)
 
     def _parse_index_operand(self, text: str) -> Tuple[int, Operand]:
@@ -79,6 +97,11 @@ class PatternParser:
         assert ":" in text, f"Malformed indexed operand: {text}"
         index_string, operand_token = text.split(":", 2)
         return int(index_string), self._parse_operand(operand_token)
+
+    @staticmethod
+    def _could_be_call(text: str) -> bool:
+        """Check whether the given string could be a call."""
+        return not text.startswith('"') and "(" in text
 
 
 class RuleParser:

@@ -6,19 +6,27 @@ from dataclasses import dataclass
 from itertools import chain, product
 from typing import Any, Dict, Generator, Optional, Set, Tuple
 
-from .statement import Assignment, Call, Variable
+from .statement import Assignment, Call, CallAssignment, Statement, Variable
 
 
 @dataclass(frozen=True)
 class Block:
     """Class modelling a group of statements."""
 
-    statements: Tuple[Call, ...]
+    statements: Tuple[Statement, ...]
+
+    @property
+    def calls(self) -> Generator[Call, Any, None]:
+        for statement in self.statements:
+            if isinstance(statement, Call):
+                yield statement
+            elif isinstance(statement, CallAssignment):
+                yield statement.value
 
     @property
     def labels(self) -> Set[str]:
         """Return a set of utilized labels."""
-        return {x.label for x in self.statements}
+        return {x.label for x in self.calls}
 
     @property
     def variables(self) -> Set[Variable]:
@@ -28,7 +36,7 @@ class Block:
     @property
     def assignments(self) -> Tuple[Assignment, ...]:
         """Return all assignment objects contained in the behavior."""
-        return tuple(call for call in self.statements if isinstance(call, Assignment))
+        return tuple(statement for statement in self.statements if isinstance(statement, Assignment))
 
     @property
     def definitions(self) -> Dict[Variable, Assignment]:
@@ -39,13 +47,13 @@ class Block:
         """Return the definition of the given variable."""
         return self.definitions.get(variable, None)
 
-    def get_dependencies(self, variable: Variable) -> Tuple[Call, ...]:
+    def get_dependencies(self, variable: Variable) -> Tuple[Statement, ...]:
         """Return the statements depending on the given variable."""
-        return tuple(call for call in self.statements if variable in call.dependencies)
+        return tuple(statement for statement in self.statements if variable in statement.dependencies)
 
-    def get_statements(self, label):
-        """Return all statements referring to the given label."""
-        return [x for x in self.statements if x.label == label]
+    def get_statements(self, label) -> Tuple[Call, ...]:
+        """Return all calls referring to the given label."""
+        return tuple(call for call in self.calls if call.label == label)
 
     def __str__(self):
         """Return a string representation (reparseable)."""
