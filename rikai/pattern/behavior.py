@@ -17,6 +17,7 @@ class Block:
 
     @property
     def calls(self) -> Generator[Call, Any, None]:
+        """Yield all calls contained in the block."""
         for statement in self.statements:
             if isinstance(statement, Call):
                 yield statement
