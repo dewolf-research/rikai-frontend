@@ -1,7 +1,7 @@
 """Module handling the generation of TypeDB queries."""
 from typing import Any, Generator
 
-from rikai.pattern import Block, Call, IntegerLiteral, StringLiteral, UnboundVariable, Variable
+from rikai.pattern import Block, Call, CallAssignment, IntegerLiteral, LiteralAssignment, StringLiteral, UnboundVariable, Variable
 
 
 class QueryGenerator:
@@ -21,10 +21,10 @@ class QueryGenerator:
         :return: Strings making up the query.
         """
         yield "match"
-        for i, statement in enumerate(block.statements):
+        for i, call in enumerate(block.calls):
             call_name = f"$call{i}"
-            yield f'{call_name} isa Call, has Label "{statement.label}", has Line $l{i};\n'
-            yield from QueryGenerator._add_parameters(block, call_name, statement)
+            yield f'{call_name} isa Call, has Label "{call.label}", has Line $l{i};\n'
+            yield from QueryGenerator._add_parameters(block, call_name, call)
         yield "get " + ", ".join(f"$l{i}" for i in range(len(block.statements))) + ";"
 
     @staticmethod
@@ -41,9 +41,10 @@ class QueryGenerator:
             if isinstance(parameter, UnboundVariable):
                 continue
             yield f"({call_name}_{j}, {call_name}) isa Parameter, has Index {j + 1};"
-            if isinstance(parameter, StringLiteral):
-                yield f'{call_name}_{j} isa StringLiteral, has StringValue "{parameter.value}";'
-            elif isinstance(parameter, IntegerLiteral):
-                yield f"{call_name}_{j} isa IntegerLiteral, has IntegerValue {parameter.value};"
-            elif isinstance(parameter, Variable) and (definition := block.get_definition(parameter)):
-                yield f'{call_name}_{j} isa Call, has Label "{definition.label}";'
+            match block.get_definition(parameter) if isinstance(parameter, Variable) else parameter:
+                case CallAssignment(target, call):
+                    yield f'{call_name}_{j} isa Call, has Label "{call.label}";'
+                case LiteralAssignment(StringLiteral(value)):
+                    yield f'{call_name}_{j} isa StringLiteral, has StringValue "{value}";'
+                case LiteralAssignment(IntegerLiteral(value)):
+                    yield f"{call_name}_{j} isa IntegerLiteral, has IntegerValue {value};"

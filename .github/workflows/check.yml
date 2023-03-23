@@ -21,7 +21,7 @@ jobs:
       - name: pydocstyle
         run: pydocstyle rikai
       - name: pycodestyle
-        run: pycodestyle --max-line-length=140 rikai
+        run: pycodestyle --config=pyproject.toml rikai
       - name: isort
         run: isort -c .
   run-tests:
