@@ -1,0 +1,6 @@
+pytest
+black
+mypy
+isort
+types-PyYAML
+-r requirements.txt
