@@ -40,7 +40,7 @@ class JoernBridge:
         """
         assert path.exists(), "The given source file does not exist!"
         database_id = str(uuid4())
-        result = run((self.rikai_path, database_id, path), timeout=self.timeout, capture_output=True)
+        result = run((self.rikai_path, database_id, path), timeout=self.timeout, stdout=sys.stdout, stderr=sys.stderr)
         try:
             result.check_returncode()
         except CalledProcessError as e:

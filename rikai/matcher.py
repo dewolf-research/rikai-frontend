@@ -12,7 +12,7 @@ class PatternMatcher:
     def __init__(self, db: Database):
         """Create a new instance linked to the given Database object."""
         self._db = db
-        self._generator = QueryGenerator
+        self._generator = QueryGenerator()
 
     def match(self, behavior: Behavior) -> Tuple[Tuple[int, ...], ...]:
         """

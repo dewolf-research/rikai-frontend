@@ -1,9 +1,10 @@
 """Class implementing operands utilized in behavior pattern."""
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from .constraint import Constraint
 
-class Operand(ABC):
+
+class Operand(Constraint):
     """Generic base class for all operands."""
 
     pass

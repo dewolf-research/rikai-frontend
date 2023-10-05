@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from itertools import chain, product
 from typing import Any, Dict, Generator, Optional, Set, Tuple
 
-from .statement import Assignment, Call, CallAssignment, Statement, Variable
+from .statement import Assignment, Call, CallAssignment, Reference, Statement, Variable
 
 
 @dataclass(frozen=True)
@@ -23,6 +23,11 @@ class Block:
                 yield statement
             elif isinstance(statement, CallAssignment):
                 yield statement.value
+
+    @property
+    def references(self) -> Generator[Reference, Any, None]:
+        """Iterate all literal references in the block."""
+        return (statement for statement in self.statements if isinstance(statement, Reference))
 
     @property
     def labels(self) -> Set[str]:
@@ -64,6 +69,10 @@ class Block:
         """Return the size of the current behavior."""
         return len(self.statements)
 
+    def __iter__(self):
+        """iterate all statements in the block."""
+        yield from self.statements
+
 
 class BlockContainer(ABC):
     """Base interface for objects containing several blocks."""
@@ -97,6 +106,7 @@ class BlockContainer(ABC):
 class Disjunction(BlockContainer):
     """Class modelling a block with several alternatives."""
 
+    value: str
     possibilities: Dict[str, Block]
 
     @property
@@ -106,9 +116,9 @@ class Disjunction(BlockContainer):
 
     def __str__(self) -> str:
         """Return a string representation of the disjunction with its blocks and their names."""
-        return "or:\n" + "\n".join(
-            f"\t{name}:\n\t\t" + "\n\t\t".join(str(block).splitlines()) for name, block in self.possibilities.items()
-        )
+        return f"switch({self.value}) {{\n" + "\n".join(
+            f"\tcase {name}:\n\t\t" + "\n\t\t".join(str(block).splitlines() + ["break"]) for name, block in self.possibilities.items()
+        ) + "\n}"
 
 
 @dataclass(frozen=True)

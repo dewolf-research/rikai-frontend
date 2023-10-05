@@ -49,8 +49,7 @@ class SynchronousFrontend(FrontendInterface):
         db = self._manager.get(db_name)
         matcher = PatternMatcher(db)
         for rule in self._parser.iterate(Path(self._config.get("rules", "Path"))):
-            result = matcher.match(rule.pattern)
-            if result:
+            if result := matcher.match(rule.pattern):
                 yield rule, result
 
     def report_live(self, sample: Path):
