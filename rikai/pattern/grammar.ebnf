@@ -1,0 +1,62 @@
+behavior    : section+
+
+?section    : disjunction
+            | structure
+
+block       : statement+
+
+disjunction : "switch" "(" operand ")" "{" case* "}"
+
+?structure  : loop
+            | branch
+            | block
+
+case        : "case" operand ":" block "break"
+
+?statement  : assignment
+            | reference
+            | call
+
+reference   : literal
+
+?literal    : integer
+            | ESCAPED_STRING
+
+integer     : hexint
+            | SIGNED_NUMBER
+
+?hexint      : /0x[0-9a-fA-F]+/
+
+?name       : /\w+/
+
+variable    : name
+
+?operand    : unbound
+            | literal
+            | operation
+            | variable
+
+unbound     : "_"
+
+?operation  : compound
+            | condition
+
+compound    : operand "+" operand ( "+" operand )*
+
+condition   : operand ( "|" operand )*
+
+call        : name "(" (operand ","?)* ")"
+
+assignment  : variable "=" operand
+            | variable "=" call
+
+loop        : "while" "(" condition ")" ( "{" block "}" )?
+
+branch      : "if" "(" condition ")" ( "{" block "}" )?
+
+
+%import common.ESCAPED_STRING
+%import common.SIGNED_NUMBER
+%import common.HEXDIGIT
+%import common.WS
+%ignore WS

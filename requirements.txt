@@ -1,2 +1,3 @@
 typedb-client
 PyYAML
+lark
