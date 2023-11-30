@@ -45,7 +45,7 @@ class QueryGenerator:
             yield f'{id(call)} isa Call, has Label "{call.label}", has Line $l{id(call)};\n'
             yield from self._add_parameters(block, call)
         for reference in block.references:
-            yield self.translate_literal(reference.literal)
+            yield from reference.get_constraint()
         yield "get " + ", ".join(f"$l{id(call)}" for call in block.calls) + ";"
 
     def _add_parameters(self, block: Block, call: Call) -> Generator[str, Any, None]:
@@ -66,16 +66,6 @@ class QueryGenerator:
             elif isinstance(parameter, Literal):
                 yield self.translate_literal(parameter)
             yield f"({parameter.name}_{j}, {call.name}) isa Parameter, has Index {j + 1};"
-
-    @staticmethod
-    def translate_literal(entity: Literal) -> str:
-        """Generate a typedb query for the given operand, asserting its existence in the database."""
-        match entity:
-            case StringLiteral(value):
-                return f'{id(entity)} isa StringLiteral, has StringValue "{value}";'
-            case IntegerLiteral(value):
-                return f"{id(entity)} isa IntegerLiteral, has IntegerValue {value};"
-        raise ValueError(f"Unknown operand type {type(entity)}")
 
     def translate_definition(self, definition: Assignment) -> str:
         """Generate a constraint for the given value definition."""

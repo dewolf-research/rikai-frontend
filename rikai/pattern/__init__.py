@@ -1,16 +1,16 @@
 """Module implementing behavior pattern and their components."""
 from .operands import EnumValue, IntegerLiteral, Literal, Operand, StringLiteral, UnboundVariable, Variable
-from .operations import Operation, Compound
+from .operations import Operation, Compound, Condition
 from .parser import (
     Assignment,
     Behavior,
-    Block,
     Call,
     CallAssignment,
     LiteralAssignment,
-    PatternParser,
+    RuleParser,
     Reference,
     Rule,
     RuleParser,
     Statement,
 )
+from .block import Block

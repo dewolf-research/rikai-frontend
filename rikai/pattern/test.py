@@ -1,5 +1,7 @@
 from lark import Lark
 
+from parser import LarkParser, RuleParser
+
 test = """
 y = 2
 switch ( "method" ) {
@@ -10,16 +12,16 @@ switch ( "method" ) {
         x = 3
         break
 }
+if ( x )
 test32 = "test string"
 foo("bar")
 """
 
-with open('grammar.ebnf', 'r') as grammar:
-    parser = Lark(grammar, start="rule")
-tree = parser.parse(test)
-print(tree.pretty())
+parser = RuleParser()
+pattern = parser.parse_pattern(test)
+print(str(pattern))
 
-print(tree)
-print(dir(tree))
-print(type(tree.data))
-print(tree.children)
+for possibility in pattern.expand():
+    print(possibility)
+    for constraint in possibility.get_constraint():
+        print(constraint)

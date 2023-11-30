@@ -4,11 +4,10 @@ from dataclasses import dataclass
 from typing import Set, Tuple, Iterable
 
 from .constraint import Constraint
-from .matchable import Matchable
 from .operands import Literal, Operand, Variable
 
 
-class Statement(Constraint, Matchable, ABC):
+class Statement(Constraint, ABC):
     """Base interface for all statements making up a line in a behavior."""
 
     @property
@@ -27,6 +26,12 @@ class Statement(Constraint, Matchable, ABC):
         """Return a set of all variables referenced in this statement."""
         pass
 
+    @property
+    @abstractmethod
+    def literals(self) -> Set[Literal]:
+        """Return a set if all literals referenced by the statement."""
+        pass
+
 
 @dataclass(frozen=True)
 class Reference(Statement):
@@ -38,7 +43,14 @@ class Reference(Statement):
     defines = set()
     dependencies = set()
 
+    def get_constraint(self) -> Iterable[str]:
+        """Return a constraint based on the contained literal."""
+        return self.literal.get_constraint()
 
+    @property
+    def literals(self) -> Set[Literal]:
+        """Return a set if all literals referenced by the statement."""
+        return {self.literal}
 
 
 @dataclass(frozen=True)
@@ -61,12 +73,17 @@ class Call(Statement):
     @property
     def dependencies(self) -> Set[Variable]:
         """Return a set of all variables the call depends on."""
-        return {x for x in self.parameters if isinstance(x, Variable)}
+        return set.union(*(param.variables for param in self.parameters))
 
     @property
     def variables(self) -> Set[Variable]:
         """Return a list of all variables in the call."""
         return self.dependencies
+
+    @property
+    def literals(self) -> Set[Literal]:
+        """Return all parameters referencing literals."""
+        return set.union(*(param.literals for param in self.parameters))
 
     def _get_typedb_string(self) -> str:
         """Return a typedb declaration for Call Statements."""
@@ -74,10 +91,10 @@ class Call(Statement):
 
     def get_constraint(self) -> Iterable[str]:
         """Return TypeDB constraints for this call and its parameters,"""
-        yield f'{self.id} isa Call, has Label "{self.label}", has Line $l{self.id};'
+        yield f'{self.id} isa Call, has Label "{self.label}", has Line $l{id(self)};'
         for i, parameter in enumerate(self.parameters):
-            yield from parameter.get_constraint()
-            yield f'({parameter.id}_{i}, {self.id}) isa Parameter, has Index {i + 1};'
+            for operand in parameter.literals | parameter.variables:
+                yield f"({operand.id}, {self.id}) isa Parameter, has Index {i + 1};"
 
 
 @dataclass(frozen=True)
@@ -98,10 +115,8 @@ class Assignment(Statement, ABC):
 
     def get_constraint(self) -> Iterable[str]:
         """Return TypeDB constraints for this assignment,"""
-        yield f'{self.id} isa Call, has Label "{definition.value.label}";'
-        for i, parameter in enumerate(self.parameters):
-            yield from parameter.get_constraint()
-            yield f"({parameter.id}_{i}, {self.id}) isa Parameter, has Index {i + 1};"
+        yield f"({self.id}, {self.assignee.id}) isa Definition;"
+        return self.value.get_constraint()
 
 
 @dataclass(frozen=True)
@@ -119,6 +134,11 @@ class CallAssignment(Assignment):
     def variables(self) -> Set[Variable]:
         """Return a list of all variables in the assignment."""
         return {self.assignee} | self.value.dependencies
+
+    @property
+    def literals(self) -> Set[Literal]:
+        """Return a set of literals contained in the call."""
+        return self.value.literals
 
 
 @dataclass(frozen=True)
@@ -138,6 +158,6 @@ class LiteralAssignment(Assignment):
         return {self.assignee}
 
     @property
-    def name(self) -> str:
-        """Return the name of the referenced literal."""
-        return self.value.name
+    def literals(self) -> Set[Literal]:
+        """Return a set of literals contained in the call."""
+        return {self.value} | self.value.literals

@@ -1,17 +1,19 @@
-rule        : section+
+behavior    : section+
 
-?section    : block
-            | disjunction
+?section    : disjunction
+            | structure
 
 block       : statement+
 
 disjunction : "switch" "(" operand ")" "{" case* "}"
 
+?structure  : loop
+            | branch
+            | block
+
 case        : "case" operand ":" block "break"
 
 ?statement  : assignment
-            | loop
-            | branch
             | reference
             | call
 
@@ -23,7 +25,7 @@ reference   : literal
 integer     : hexint
             | SIGNED_NUMBER
 
-?hexint      : /0x[0-9a-f]+/
+?hexint      : /0x[0-9a-fA-F]+/
 
 ?name       : /\w+/
 
@@ -37,17 +39,20 @@ variable    : name
 unbound     : "_"
 
 ?operation  : compound
+            | condition
 
-compound    : operand "+" operand
+compound    : operand "+" operand ( "+" operand )*
+
+condition   : operand ( "|" operand )*
 
 call        : name "(" (operand ","?)* ")"
 
 assignment  : variable "=" operand
             | variable "=" call
 
-loop        : "while" "(" operand ")"
+loop        : "while" "(" condition ")" ( "{" block "}" )?
 
-branch      : "if" "(" operand ")"
+branch      : "if" "(" condition ")" ( "{" block "}" )?
 
 
 %import common.ESCAPED_STRING
